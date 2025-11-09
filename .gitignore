@@ -1,2 +1,5 @@
 **/.DS_Store
 **/__pycache__
+
+# Large metadata files (too large for GitHub)
+ffhq-dataset-v2.json
