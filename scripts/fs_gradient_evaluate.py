@@ -209,10 +209,18 @@ def main() -> None:
     arr = arr[: args.num_evaluate]
     np.save("arr.npy", arr)
 
+    # Use custom FID reference path if provided, otherwise use default
+    if hasattr(args, 'fid_reference_path') and args.fid_reference_path:
+        fid_ref_path = args.fid_reference_path
+    else:
+        fid_ref_path = f"/path/to/project/datasets/fid_npz/{args.category}.npz"
+    
+    print(f"FID reference path: {fid_ref_path}")
+    
     evaluator = Evaluator(
         args,
         torch.from_numpy(arr),
-        f"/path/to/project/datasets/fid_npz/{args.category}.npz",
+        fid_ref_path,
         args.lpips_cluster_size,
     )
 
