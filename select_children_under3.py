@@ -10,7 +10,7 @@ import shutil
 from pathlib import Path
 
 # Configuration
-METADATA_PATH = "ffhq-dataset-v2.json"  # Path to metadata file
+METADATA_PATH = "/kaggle/input/metadata/ffhq-dataset-v2.json"  # Path to metadata file
 SOURCE_DIR = "/kaggle/working/ffhq/Part1"  # Source directory with images
 OUTPUT_DIR = "/kaggle/working/children_under3"  # Output directory
 AGE_THRESHOLD = 3.0  # Maximum age in years

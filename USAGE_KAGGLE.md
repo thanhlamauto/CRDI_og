@@ -17,16 +17,13 @@ In a Kaggle notebook code cell, run:
 
 Since `ffhq-dataset-v2.json` is too large for GitHub (>200MB), you need to:
 
-**Option A: Upload as Kaggle Dataset**
-1. Go to Kaggle and create a new dataset
+**Upload as Kaggle Dataset (Recommended)**
+1. Go to Kaggle and create a new dataset named "metadata"
 2. Upload the `ffhq-dataset-v2.json` file
 3. Add the dataset to your notebook
+4. The script expects the file at: `/kaggle/input/metadata/ffhq-dataset-v2.json`
 
-**Option B: Download from FFHQ Source**
-```bash
-# Download the metadata file from the official FFHQ repository
-!wget https://github.com/NVlabs/ffhq-dataset/raw/master/ffhq-dataset-v2.json
-```
+**Note**: The script is already configured to use `/kaggle/input/metadata/ffhq-dataset-v2.json`
 
 ### 3. Ensure Your Images are in the Correct Location
 
@@ -60,7 +57,7 @@ To change the age threshold or paths, edit the configuration section in `select_
 
 ```python
 # Configuration
-METADATA_PATH = "ffhq-dataset-v2.json"  # Path to metadata file
+METADATA_PATH = "/kaggle/input/metadata/ffhq-dataset-v2.json"  # Path to metadata file
 SOURCE_DIR = "/kaggle/working/ffhq/Part1"  # Source directory with images
 OUTPUT_DIR = "/kaggle/working/children_under3"  # Output directory
 AGE_THRESHOLD = 3.0  # Maximum age in years
@@ -75,9 +72,13 @@ Here's a complete example for use in Kaggle:
 !git clone https://github.com/thanhlamauto/CRDI_og.git
 %cd CRDI_og
 
-# Cell 2: Download metadata (if needed)
-# If you haven't uploaded it as a dataset
-!wget https://github.com/NVlabs/ffhq-dataset/raw/master/ffhq-dataset-v2.json
+# Cell 2: Verify metadata file exists
+import os
+metadata_path = "/kaggle/input/metadata/ffhq-dataset-v2.json"
+if os.path.exists(metadata_path):
+    print(f"✓ Metadata file found: {metadata_path}")
+else:
+    print(f"✗ Metadata file not found. Please add 'metadata' dataset to your notebook.")
 
 # Cell 3: Run the selection script
 !python select_children_under3.py
@@ -129,7 +130,7 @@ Or simply upload `select_ffhq_children.ipynb` to your Kaggle notebook interface.
 ## Troubleshooting
 
 ### Issue: Metadata file not found
-**Solution**: Make sure the `ffhq-dataset-v2.json` file is in the same directory as the script, or update the `METADATA_PATH` variable.
+**Solution**: Make sure you've added the "metadata" dataset to your Kaggle notebook inputs. The file should be at `/kaggle/input/metadata/ffhq-dataset-v2.json`. If your dataset has a different name, update the `METADATA_PATH` variable in the script.
 
 ### Issue: Source directory not found
 **Solution**: Verify that your images are located at `/kaggle/working/ffhq/Part1/` or update the `SOURCE_DIR` variable.
