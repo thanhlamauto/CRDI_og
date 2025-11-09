@@ -4,72 +4,84 @@ Select face images of children under 3 years old from FFHQ dataset.
 Usage: python select_children_under3.py
 """
 
-import json
+import csv
 import os
 import shutil
 from pathlib import Path
 
 # Configuration
-METADATA_PATH = "/kaggle/input/metadata/ffhq-dataset-v2.json"  # Path to metadata file
+CSV_PATH = "/kaggle/input/aging-labels/ffhq_aging_labels.csv"  # Path to CSV file
 SOURCE_DIR = "/kaggle/working/ffhq/Part1"  # Source directory with images
 OUTPUT_DIR = "/kaggle/working/children_under3"  # Output directory
-AGE_THRESHOLD = 3.0  # Maximum age in years
+AGE_GROUP = "0-2"  # Age group for children under 3 years (0-2 years)
 
 def main():
     print("=" * 70)
     print("FFHQ Children Image Selection Tool")
     print("=" * 70)
-    print(f"Metadata file: {METADATA_PATH}")
+    print(f"CSV file: {CSV_PATH}")
     print(f"Source directory: {SOURCE_DIR}")
     print(f"Output directory: {OUTPUT_DIR}")
-    print(f"Age threshold: < {AGE_THRESHOLD} years")
+    print(f"Age group: {AGE_GROUP} (children under 3 years)")
     print("=" * 70)
     
-    # Load metadata
-    print("\n[1/4] Loading metadata...")
+    # Load CSV metadata
+    print("\n[1/4] Loading CSV metadata...")
     try:
-        with open(METADATA_PATH, 'r') as f:
-            metadata = json.load(f)
-        print(f"✓ Loaded metadata for {len(metadata)} images")
+        with open(CSV_PATH, 'r') as f:
+            csv_reader = csv.DictReader(f)
+            all_data = list(csv_reader)
+        print(f"✓ Loaded metadata for {len(all_data)} images")
     except FileNotFoundError:
-        print(f"✗ Error: Metadata file not found: {METADATA_PATH}")
+        print(f"✗ Error: CSV file not found: {CSV_PATH}")
         return
     except Exception as e:
-        print(f"✗ Error loading metadata: {e}")
+        print(f"✗ Error loading CSV: {e}")
         return
     
-    # Filter for children under 3 years old
-    print(f"\n[2/4] Filtering children under {AGE_THRESHOLD} years...")
+    # Filter for children in age group 0-2 (under 3 years old)
+    print(f"\n[2/4] Filtering children in age group '{AGE_GROUP}'...")
     children_images = []
     
-    for image_id, image_data in metadata.items():
-        if 'category' in image_data and 'age' in image_data['category']:
-            age = image_data['category']['age']
+    for row in all_data:
+        if row['age_group'] == AGE_GROUP:
+            image_number = int(row['image_number'])
+            # Convert image number to 5-digit padded format (e.g., 0 -> 00000)
+            image_id = f"{image_number:05d}"
             
-            if age is not None and age < AGE_THRESHOLD:
-                children_images.append({
-                    'image_id': image_id,
-                    'filename': f"{image_id}.png",
-                    'age': age,
-                    'gender': image_data['category'].get('gender', 'unknown')
-                })
+            children_images.append({
+                'image_id': image_id,
+                'image_number': image_number,
+                'filename': f"{image_id}.png",
+                'age_group': row['age_group'],
+                'age_group_confidence': row['age_group_confidence'],
+                'gender': row['gender'],
+                'gender_confidence': row['gender_confidence']
+            })
     
-    # Sort by age
-    children_images.sort(key=lambda x: x['age'])
+    # Sort by image number
+    children_images.sort(key=lambda x: x['image_number'])
     
-    print(f"✓ Found {len(children_images)} children under {AGE_THRESHOLD} years")
+    print(f"✓ Found {len(children_images)} children in age group '{AGE_GROUP}'")
     
     if not children_images:
         print("\n✗ No images found matching the criteria.")
         return
     
     # Display statistics
-    ages = [item['age'] for item in children_images]
     print(f"\n   Statistics:")
-    print(f"   - Minimum age: {min(ages):.2f} years")
-    print(f"   - Maximum age: {max(ages):.2f} years")
-    print(f"   - Average age: {sum(ages)/len(ages):.2f} years")
-    print(f"   - Median age: {sorted(ages)[len(ages)//2]:.2f} years")
+    print(f"   - Total images: {len(children_images)}")
+    print(f"   - Age group: {AGE_GROUP} years")
+    
+    # Gender distribution
+    gender_count = {}
+    for item in children_images:
+        gender = item['gender']
+        gender_count[gender] = gender_count.get(gender, 0) + 1
+    
+    print(f"   - Gender distribution:")
+    for gender, count in sorted(gender_count.items()):
+        print(f"     {gender}: {count}")
     
     # Create output directory
     print(f"\n[3/4] Creating output directory...")
@@ -79,9 +91,9 @@ def main():
     # Save metadata CSV
     csv_path = os.path.join(OUTPUT_DIR, 'children_metadata.csv')
     with open(csv_path, 'w') as f:
-        f.write("image_id,filename,age,gender\n")
+        f.write("image_id,image_number,filename,age_group,age_group_confidence,gender,gender_confidence\n")
         for item in children_images:
-            f.write(f"{item['image_id']},{item['filename']},{item['age']},{item['gender']}\n")
+            f.write(f"{item['image_id']},{item['image_number']},{item['filename']},{item['age_group']},{item['age_group_confidence']},{item['gender']},{item['gender_confidence']}\n")
     print(f"✓ Saved metadata: {csv_path}")
     
     # Save image IDs list
@@ -134,10 +146,10 @@ def main():
     
     # Display first 10 examples
     print("\nFirst 10 examples:")
-    print(f"{'Image ID':<10} {'Age (years)':<15} {'Gender':<10}")
-    print("-" * 35)
+    print(f"{'Image ID':<10} {'Image #':<10} {'Age Group':<12} {'Gender':<10} {'Confidence':<12}")
+    print("-" * 54)
     for item in children_images[:10]:
-        print(f"{item['image_id']:<10} {item['age']:<15.2f} {item['gender']:<10}")
+        print(f"{item['image_id']:<10} {item['image_number']:<10} {item['age_group']:<12} {item['gender']:<10} {item['age_group_confidence']:<12}")
 
 if __name__ == "__main__":
     main()
