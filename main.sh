@@ -19,7 +19,7 @@ echo "Step 2: Training on 10 baby images"
 echo "========================================="
 CUDA_VISIBLE_DEVICES=0 python scripts/fs_gradient_train.py \
 	--csv_file datasets/babies_target/babies.csv \
-	--t_start 5 --t_end 20 --num_gradient 15 \
+	--t_start 5 --t_end 20 --num_gradient 2 \
 	--random_q_noise True --epochs 50 --learning_rate 0.05 \
 	--category babies --print_config True \
 	--batch_size 1 --num_samples 10
@@ -30,7 +30,7 @@ echo "Step 3: Generating 100 images and computing FID"
 echo "========================================="
 CUDA_VISIBLE_DEVICES=0 python scripts/fs_gradient_evaluate.py \
 	--csv_file datasets/babies_target/babies.csv \
-	--t_start 5 --t_end 20 --num_gradient 15 \
+	--t_start 5 --t_end 20 --num_gradient 2 \
 	--anneal_ptb True --anneal_scale 0.05 \
 	--use_x_0 True --random_q_noise True --print_config True \
 	--category babies --num_evaluate 100 --lpips_cluster_size 50 \
