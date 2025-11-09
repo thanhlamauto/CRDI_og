@@ -18,7 +18,7 @@ from torch.utils.data import Dataset, DataLoader
 from torchvision import transforms
 from tqdm import tqdm
 
-from src.fs_gradients.fid_score import InceptionV3, get_activations_from_files
+from src.fs_gradients.fid_score import InceptionV3
 
 
 class ImageFolderDataset(Dataset):
